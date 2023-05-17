@@ -1,0 +1,6 @@
+*_download/
+CMakeFiles/*
+build/*
+.vscode/*
+*.xz
+multithreadDownloader
