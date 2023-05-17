@@ -1,5 +1,5 @@
 # This tool is for download purpose.
-## This tool can split target file into parts, and  to supports concurrently download files into local storage.
+## This tool can split target file into parts, and support concurrently download files into local storage.
 
 # Dependency
 1. libcurl library: download files via http protocol only now.
