@@ -51,7 +51,7 @@ string getFilePath(const string &filename, int i) {
 void splitUrl(const string &urls, vector<string> &url_vec) {
   if (urls.find(';') != string::npos) {
     int s = 0;
-    int i = 0;
+    decltype(urls.size())  i = 0;
     for (; i < urls.size(); i++) {
       if (urls[i] == ';') {
         url_vec.push_back(urls.substr(s, i));
@@ -114,4 +114,4 @@ double computeDownLoadSpeed(double delta_seconds, double delta_size) {
   assert(delta_seconds != 0);
   return delta_size / delta_seconds;
 }
-}; // namespace MUtil
+} // namespace MUtil

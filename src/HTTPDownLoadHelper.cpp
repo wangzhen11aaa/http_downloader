@@ -12,7 +12,7 @@ void HTTPDownLoadHelper::getHTTPRemoteFileSize(bool &remote_support_range,
     curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
     curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    auto res = curl_easy_perform(curl);
+    //auto res = curl_easy_perform(curl);
 
     int res_code;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &res_code);
@@ -29,7 +29,7 @@ void HTTPDownLoadHelper::getHTTPRemoteFileSize(bool &remote_support_range,
     }
 
     curl_easy_setopt(curl, CURLOPT_RANGE, "0-0");
-    res = curl_easy_perform(curl);
+    //res = curl_easy_perform(curl);
     // 通过再次访问获得此文件是否支持range.
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &res_code);
     remote_support_range = res_code == 206 ? true : false;

@@ -38,16 +38,18 @@ public:
 
   unordered_map<string, double> &get_file_size_map() { return fz_map_; }
 
-  void add_file_future_map(const string &file_name, int idx,
-                           future<double> fut) {
-    file_future_map_[file_name].push_back({idx, std::move(fut)});
+  // 由于future是不能被copy成两份，只能被move的资源,而vector.push_back()在传入左reference或者普通的lvalue时，都会调用vector.push_back(T&)从而调用pair的copy construtor,而copy constructor进而会调用future的copy constructor但是future的copy constructor是delete的。所以，这里需要将taskPair变为右值引用。
+  void add_file_future_map(const string &file_name, pair<int, future<double> > &&taskPair){
+    file_future_map_[file_name].push_back(std::move(taskPair));
   }
+
   void add_file_future_vec(const string &file_name,
                            vector<pair<int,future<double>>> &&other) {
     auto t = std::move(file_future_map_[file_name]);
     file_future_map_[file_name] = std::move(other);
   }
 
+// 将文件与目录联系起来。
   void add_file_dir_map(const string &file_name, const string &dirname) {
     if (file_dir_map_.count(file_name)) {
       return;
@@ -62,6 +64,7 @@ public:
   vector<pair<int, future<double>>> &get_file_future(const string &file_name) {
     return file_future_map_[file_name];
   }
+
   // 记录一个file有多少个parts.
   void add_file_parts_map(string &file_name, int parts) {
     assert(file_dir_map_.count(file_name) == 0);

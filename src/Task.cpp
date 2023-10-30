@@ -3,7 +3,14 @@
 #include <cstdio>
 #include <exception>
 
-double DownLoadTask::execute(const string& url, string partfileName){
+namespace DownLoadTask{
+
+ size_t write_data(void *ptr, size_t size, size_t nmemb, void *stream) {
+    size_t written = fwrite(ptr, size, nmemb, (FILE *)stream);
+    return written;
+}
+
+double execute(const string& url, string partfileName){
     CURL *curl_handle;
   const char *pagefilename = partfileName.c_str();
   FILE *pagefile;
@@ -24,7 +31,7 @@ double DownLoadTask::execute(const string& url, string partfileName){
 
   /* send all data to this function  */
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION,
-                   DownLoadTask::write_data);
+                   write_data);
 
   /* open the file */
   pagefile = fopen(pagefilename, "wb");
@@ -48,7 +55,7 @@ double DownLoadTask::execute(const string& url, string partfileName){
   return ds;
 }
 
-double DownLoadTask::execute_for_part(const string &url, string partfileName,
+double execute_for_part(const string &url, string partfileName,
                         string &rangeStr) {
   CURL *curl_handle;
   const char *pagefilename = partfileName.c_str();
@@ -95,6 +102,8 @@ double DownLoadTask::execute_for_part(const string &url, string partfileName,
   return ds;
 
 }
+}
+
 
 double CombineTask::execute(const string& filename, int parts) {
   try {
@@ -128,4 +137,5 @@ double CombineTask::execute(const string& filename, int parts) {
     DLOG(ERROR) << e.what() << endl;
     exit(1);
   }
+  return 0.0;
   }
