@@ -1,22 +1,23 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
+#include <cstdio>
+#include <thread>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
 #include "Context.h"
 #include "HTTPDownLoadHelper.h"
 #include "MUtil.h"
 #include "Task.h"
 #include "glog/logging.h"
-#include <cstdio>
-#include <stdio.h>
-#include <stdlib.h>
-#include <thread>
-#include <type_traits>
-#include <unistd.h>
-#include <utility>
-#include <vector>
 using namespace std;
 
 // 初始化Context,并调用线程池下载
 void downLoad(shared_ptr<Context> global_context_ptr, vector<string> &url_v,
               int part_size) {
-
   for (auto &url : url_v) {
     double fileSize = 0.0;
     bool supportRange = false;
@@ -40,11 +41,11 @@ void downLoad(shared_ptr<Context> global_context_ptr, vector<string> &url_v,
     if (!supportRange) {
       // 访问全局变量
       global_context_ptr->add_file_future_map(
-          file_name, make_pair(-1,
-          global_context_ptr->getDownloadThreadPool()->enqueue(
-              &DownLoadTask::execute, url, MUtil::getFilePath(file_name))));
+          file_name,
+          make_pair(-1, global_context_ptr->getDownloadThreadPool()->enqueue(
+                            &DownLoadTask::execute, url,
+                            MUtil::getFilePath(file_name))));
     } else {
-
       using ll = long long;
       ll s = 0, z = s + part_size;
 
@@ -53,12 +54,13 @@ void downLoad(shared_ptr<Context> global_context_ptr, vector<string> &url_v,
         string rangeStr = MUtil::generateRange(s, min(z, (ll)fileSize));
         DLOG(INFO) << "rangeStr: " << rangeStr << endl;
 
-      // 
+        //
         global_context_ptr->add_file_future_map(
-            file_name, make_pair(part_num,
-            global_context_ptr->getDownloadThreadPool()->enqueue(
-                &DownLoadTask::execute_for_part, url,
-                MUtil::getFilePath(file_name, part_num), rangeStr)));
+            file_name,
+            make_pair(part_num,
+                      global_context_ptr->getDownloadThreadPool()->enqueue(
+                          &DownLoadTask::execute_for_part, url,
+                          MUtil::getFilePath(file_name, part_num), rangeStr)));
         global_context_ptr->file_part_range_map_[file_name].push_back(rangeStr);
         global_context_ptr->file_url_map_[file_name] = url;
 
@@ -72,16 +74,17 @@ void downLoad(shared_ptr<Context> global_context_ptr, vector<string> &url_v,
 }
 
 void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
-  CombineTask combine_task{};
   int cnt = 0;
   do {
     for (auto &it : global_context_ptr->get_file_future_map()) {
       string file_name = it.first;
+      CombineTask t{};
       if (!global_context_ptr->get_file_parts(file_name)) {
         // 如果当前下载没有part.
         cnt++;
         continue;
       }
+
       double fz = global_context_ptr->get_file_size(file_name);
       DLOG(INFO) << "File size: " << fz << endl;
       auto fv = std::move(it.second);
@@ -95,18 +98,23 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
 
         // 使用wait_for是为了获取future_status的状态,可以重试下载功能。从另外一个thread栈中获得数据。
         auto status = pair_it_.second.wait_for(global_context_ptr->wait_time_);
-        // auto status = pair_it_.second.wait(global_context_ptr->wait_time_);
         if (status == std::future_status::ready) {
+          // read_size是当前下载线程读到的数据量。
           double read_size = pair_it_.second.get();
           DLOG(INFO) << "read size: " << read_size << endl;
+
+          // part_index是-1的话，代表的是当前是当前这个请求没有分range的
           if (part_index == -1) {
-            // 如果数据下载不对，那么需要重传 TODO 可以设置重试下载次数。global_context_ptr 指针是全局可见的，在main thread上存在此变量，实际空间位于堆。由于遍历在main thread上，而且是串行遍历的。不用加锁。
+            // 如果数据下载不对，那么需要重传 TODO
+            // 可以设置重试下载次数。global_context_ptr 指针是全局可见的，在main
+            // thread上存在此变量，实际空间位于堆。由于遍历在main
+            // thread上，而且是串行遍历的。不用加锁。
             if (read_size != global_context_ptr->get_file_size(file_name)) {
               nfv.push_back(
                   {part_index,
-                   std::move(global_context_ptr->getDownloadThreadPool()
-                                 ->enqueue(&DownLoadTask::execute,  url,
-                                           MUtil::getFilePath(file_name)))});
+                   global_context_ptr->getDownloadThreadPool()->enqueue(
+                       &DownLoadTask::execute, url,
+                       MUtil::getFilePath(file_name))});
             } else {
               // 已经读取的数量,直接读取
               global_context_ptr->file_has_read_size_map_[file_name] =
@@ -115,6 +123,7 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
           } else {
             string rangeStr =
                 global_context_ptr->file_part_range_map_[file_name][part_index];
+
             // 当前读取完毕
             if (read_size == part_size + 1) {
               global_context_ptr->file_has_read_size_map_[file_name] +=
@@ -127,15 +136,15 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
               DLOG(INFO) << "part_index" << part_index << "read error";
               nfv.push_back(
                   {part_index,
-                   std::move(
-                       global_context_ptr->getDownloadThreadPool()->enqueue(
-                           &DownLoadTask::execute_for_part,  url,
-                           MUtil::getFilePath(file_name, part_index),
-                           rangeStr))});
+                   global_context_ptr->getDownloadThreadPool()->enqueue(
+                       &DownLoadTask::execute_for_part, url,
+                       MUtil::getFilePath(file_name, part_index), rangeStr)});
             }
+
             // 当前range读取数量不对,或者是最后一个range,但总数不对.
             // 重传不移动future，我们认为此次读取失败.
             else {
+              // 如果文件已经下载完毕
               if (global_context_ptr->file_has_read_size_map_[file_name] +
                       read_size ==
                   fz) {
@@ -143,24 +152,12 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
                 DLOG(INFO) << "END Reading from server " << file_name;
                 break;
               } else {
-                DLOG(INFO)
-                    << "Have read"
-                    << global_context_ptr->file_has_read_size_map_[file_name] +
-                           read_size
-                    << endl;
-                DLOG(INFO) << "File size: " << fz << endl;
-                DLOG(INFO) << "fileParts: "
-                           << global_context_ptr->get_file_parts(file_name);
-                DLOG(INFO) << "Refetch part_index: " << file_name << ","
-                           << part_index << endl;
-
+                //
                 nfv.push_back(
                     {part_index,
-                     std::move(
-                         global_context_ptr->getDownloadThreadPool()->enqueue(
-                             &DownLoadTask::execute_for_part, url,
-                             MUtil::getFilePath(file_name, part_index),
-                             rangeStr))});
+                     global_context_ptr->getDownloadThreadPool()->enqueue(
+                         &DownLoadTask::execute_for_part, url,
+                         MUtil::getFilePath(file_name, part_index), rangeStr)});
               }
             }
           }
@@ -168,25 +165,26 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
           if (part_index == -1) {
             // 如果数据下载不对，那么需要重传
             global_context_ptr->add_file_future_map(
-                file_name, std::make_pair(-1,
-                global_context_ptr->getDownloadThreadPool()->enqueue(
-                    &DownLoadTask::execute, url,
-                    MUtil::getFilePath(file_name))));
+                file_name,
+                std::make_pair(
+                    -1, global_context_ptr->getDownloadThreadPool()->enqueue(
+                            &DownLoadTask::execute, url,
+                            MUtil::getFilePath(file_name))));
           } else {
             string rangeStr =
                 global_context_ptr->file_part_range_map_[file_name][part_index];
             nfv.push_back(
                 {part_index,
-                 std::move(global_context_ptr->getDownloadThreadPool()->enqueue(
+                 global_context_ptr->getDownloadThreadPool()->enqueue(
                      &DownLoadTask::execute_for_part, url,
-                     MUtil::getFilePath(file_name, part_index), rangeStr))});
+                     MUtil::getFilePath(file_name, part_index), rangeStr)});
           }
         } else {
           // 如果future status 为 deferred.
           DLOG(INFO) << "nvf added" << endl;
           nfv.push_back({pair_it_.first, std::move(pair_it_.second)});
         }
-        }
+      }
 
       // 如果某个文件的大小与读取数据一致
       if (global_context_ptr->file_has_read_size_map_[file_name] == fz) {
@@ -196,11 +194,12 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
                    << endl;
         DLOG(INFO) << "Read from server successully" << fz << endl;
 
-        //利用额外的栈进行计算。
+        //利用额外的线程栈进行计算,发送新的task给合并线程。
         global_context_ptr->add_combile_file_future_map(
             file_name, global_context_ptr->getCombinerThreadPool()->enqueue(
-                           &CombineTask::execute, &combine_task, file_name,
+                           &CombineTask::execute, &t, file_name,
                            global_context_ptr->get_file_parts(file_name)));
+
         DLOG(INFO) << "Combine file size: " << fz << endl;
 
         break;
@@ -230,7 +229,7 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
 
 int main(int argc, char *argv[]) {
   FLAGS_logtostderr = 1;
-  //FLAGS_log_dir = "./log";
+  // FLAGS_log_dir = "./log";
   google::InitGoogleLogging(argv[0]);
   DLOG(INFO) << "Running" << endl;
 
@@ -241,6 +240,6 @@ int main(int argc, char *argv[]) {
   std::shared_ptr<Context> global_context_ptr =
       make_shared<Context>(concurrency);
   downLoad(global_context_ptr->getContext(), urls, part_size);
-  waitAndCombine(global_context_ptr->getContext(), part_size);  
+  waitAndCombine(global_context_ptr->getContext(), part_size);
   return 0;
 }

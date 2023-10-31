@@ -2,12 +2,13 @@
 #define MUTIL_H
 #endif
 
-#include "Popl.h"
-#include "glog/logging.h"
+#include <chrono>
 #include <filesystem>
 #include <string>
 #include <vector>
-#include <chrono>
+
+#include "Popl.h"
+#include "glog/logging.h"
 
 namespace fs = std::filesystem;
 using popl::Attribute;
@@ -26,10 +27,10 @@ string getFilePath(const string &filename);
 string getFilePath(const string &filename, int i);
 void splitUrl(const string &urls, vector<string> &url_vec);
 string generateRange(long long s, long long e);
-long long getFileSize(FILE *f);
+long long getFileSize(std::fstream &f);
 void initOps(vector<string> &url_v, int &concurrency, int &part_size, int argc,
              char **argv);
 
 // Bytes / second.
-double computeDownLoadSpeed(double delta_seconds, double delta_size); 
-} // namespace MUtil
+double computeDownLoadSpeed(double delta_seconds, double delta_size);
+}  // namespace MUtil

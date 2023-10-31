@@ -1,5 +1,7 @@
 #include "MUtil.h"
+
 #include <cassert>
+#include <sstream>
 namespace MUtil {
 // 从url中获取文件名
 
@@ -41,7 +43,6 @@ string getFilePath(const string &filename) {
 }
 
 string getFilePath(const string &filename, int i) {
-
   auto pathName = filename.substr(0, filename.size() > 3 ? 3 : 0) +
                   "_download" + "/" + filename + "_" + to_string(i);
   DLOG(INFO) << "getFilePath: " << pathName << endl;
@@ -51,7 +52,7 @@ string getFilePath(const string &filename, int i) {
 void splitUrl(const string &urls, vector<string> &url_vec) {
   if (urls.find(';') != string::npos) {
     int s = 0;
-    decltype(urls.size())  i = 0;
+    decltype(urls.size()) i = 0;
     for (; i < urls.size(); i++) {
       if (urls[i] == ';') {
         url_vec.push_back(urls.substr(s, i));
@@ -68,11 +69,10 @@ string generateRange(long long s, long long e) {
   return to_string(s) + "-" + to_string(e);
 }
 
-long long getFileSize(FILE *f) {
-  long long sz = 0;
-  fseek(f, 0, SEEK_END);
-  sz = ftell(f);
-  fseek(f, 0, SEEK_SET);
+long long getFileSize(std::fstream &f) {
+  f.seekp(std::ios_base::end);
+  auto sz = f.tellp();
+  f.seekp(std::ios_base::beg);
   return sz;
 }
 
@@ -114,4 +114,4 @@ double computeDownLoadSpeed(double delta_seconds, double delta_size) {
   assert(delta_seconds != 0);
   return delta_size / delta_seconds;
 }
-} // namespace MUtil
+}  // namespace MUtil
