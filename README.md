@@ -7,6 +7,9 @@
 3. Popl: to parse the options.
 
 # Usage
+    0. Download
+       1. git clone recurse-submodules git@github.com:wangzhen11aaa/http_downloader.git
+   
     Build:
     Opt 1.
         cmake CMakeLists.txt
