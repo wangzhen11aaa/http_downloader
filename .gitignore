@@ -4,3 +4,7 @@ build/*
 .vscode/*
 *.xz
 multithreadDownloader
+CMakeCache.txt
+.clang-format
+lib/CMakeFiles/*
+Makefile
