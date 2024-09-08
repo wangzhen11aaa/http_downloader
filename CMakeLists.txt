@@ -9,7 +9,7 @@ set(TARGET multithreadDownloader)
 add_subdirectory(lib)
 
 set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -Werror -Wunused-variable -Wpedantic")
-include_directories(lib/log)
+
 add_executable(${TARGET} ${SRC})
 
 target_link_libraries(${TARGET} -lcurl)
