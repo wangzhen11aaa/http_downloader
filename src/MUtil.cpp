@@ -28,7 +28,8 @@ bool generateDownloadDir(const string &filename) {
                  << endl;
     }
   } catch (const exception &e) {
-    DLOG(INFO) << "Create Directory " << downlaodDir << "failed";
+    DLOG(ERROR) << e.what();
+    DLOG(ERROR) << "Create Directory " << downlaodDir << "failed";
     return false;
   }
   return true;
@@ -52,7 +53,7 @@ string getFilePath(const string &filename, int i) {
 void splitUrl(const string &urls, vector<string> &url_vec) {
   if (urls.find(';') != string::npos) {
     int s = 0;
-    decltype(urls.size()) i = 0;
+    auto i = 0u;
     for (; i < urls.size(); i++) {
       if (urls[i] == ';') {
         url_vec.push_back(urls.substr(s, i));
@@ -114,4 +115,4 @@ double computeDownLoadSpeed(double delta_seconds, double delta_size) {
   assert(delta_seconds != 0);
   return delta_size / delta_seconds;
 }
-}  // namespace MUtil
+} // namespace MUtil
