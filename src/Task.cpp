@@ -102,7 +102,7 @@ double execute_for_part(const string &url, string partfileName,
 
   return ds;
 }
-}  // namespace DownLoadTask
+} // namespace DownLoadTask
 
 // 如果使用RAII机制(即使用class这种机制)(资源分配/使用/释放
 // 是安全的，即用来保证不会造成内存泄漏)，内存泄漏一般发生在堆上内存的泄漏，或者资源(文件比如Socket未能及时关闭而导致内存泄漏)未能成功释放，而栈上的内存资源是一定会随着函数栈释放，但是栈上引用的其他的资源可能会因为不能通过栈上的handle释放此进程/线程的管理的资源而造成内存泄漏。
@@ -141,7 +141,6 @@ double CombineTask::execute(const string &filename, int parts) {
       ret += hasReadSize;
     }
     return ret;
-    wf.close();
   } catch (const std::exception &e) {
     DLOG(ERROR) << e.what() << endl;
     exit(1);
