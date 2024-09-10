@@ -178,7 +178,7 @@ protected:
  * Value option with optional default value
  * If set, it requires an argument
  */
-template <class T> class Value : public Option {
+template <typename T> class Value : public Option {
 public:
   /// Construct an Value Option
   /// @param short_name the option's short name. Must be empty or one character.
@@ -257,7 +257,7 @@ protected:
  * -without argument it carries the implicit default value
  * -with argument it carries the explicit value
  */
-template <class T> class Implicit : public Value<T> {
+template <typename T> class Implicit : public Value<T> {
 public:
   Implicit(const std::string &short_name, const std::string &long_name,
            const std::string &description, const T &implicit_val,
