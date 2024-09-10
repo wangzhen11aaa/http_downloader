@@ -194,11 +194,15 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
                    << endl;
         DLOG(INFO) << "Read from server successully" << fz << endl;
 
-        //利用额外的线程栈进行计算,发送新的task给合并线程。
+        // 利用额外的线程栈进行计算,发送新的task给合并线程。
         global_context_ptr->add_combile_file_future_map(
-            file_name, global_context_ptr->getCombinerThreadPool()->enqueue(
-                           &CombineTask::execute, &t, file_name,
-                           global_context_ptr->get_file_parts(file_name)));
+            file_name,
+            std::async(&CombineTask::execute, &t, file_name,
+                       global_context_ptr->get_file_parts(file_name)));
+        // global_context_ptr->add_combile_file_future_map(
+        //     file_name, global_context_ptr->getCombinerThreadPool()->enqueue(
+        //                    &CombineTask::execute, &t, file_name,
+        //                    global_context_ptr->get_file_parts(file_name)));
 
         DLOG(INFO) << "Combine file size: " << fz << endl;
 
