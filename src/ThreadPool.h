@@ -42,7 +42,8 @@ public:
           task();
         }
       });
-      workers.emplace_back(std::move(worker));
+      // workers.emplace_back(std::move(worker));
+      workers.push_back(std::move(worker));
     }
   }
   // Asychronously execute task.
@@ -55,10 +56,10 @@ public:
     auto res = task->get_future();
     {
       lock_guard<std::mutex> lk(mutex_);
-      tasks.emplace([task]() -> void { (*task)(); });
+      tasks.push([task]() -> void { (*task)(); });
     }
     cv.notify_one();
-    return std::move(std::move(res));
+    return std::move(res);
   }
 
   ~ThreadPool() {
@@ -66,7 +67,7 @@ public:
       std::unique_lock<std::mutex> lk(mutex_);
       stop = true;
     }
-    // cv.notify_all();
+    cv.notify_all();
     DLOG(INFO) << "ThreadPool destrcuted \n";
     for (auto &worker : workers) {
       worker.join();
