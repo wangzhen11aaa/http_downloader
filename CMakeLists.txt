@@ -8,7 +8,7 @@ set(TARGET multithreadDownloader)
 
 add_subdirectory(lib)
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -Werror -Wunused-variable -Wpedantic")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -Werror -Wunused-variable -Wpedantic -g")
 
 add_executable(${TARGET} ${SRC})
 
