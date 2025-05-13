@@ -8,7 +8,7 @@
 
 # Usage
     0. Download
-       1. git clone recurse-submodules git@github.com:wangzhen11aaa/http_downloader.git
+       1. git clone --recurse-submodules git@github.com:wangzhen11aaa/http_downloader.git
    
     Build:
     Opt 1.
