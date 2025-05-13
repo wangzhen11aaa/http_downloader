@@ -3,6 +3,7 @@
 
 namespace http_download {
 HTTPDownLoadHelper *HTTPDownLoadHelper::instance_ = nullptr;
+std::mutex HTTPDownLoadHelper::mutex_;
 
 void HTTPDownLoadHelper::getHTTPRemoteFileSize(bool &remote_support_range,
                                                const std::string &url_str,

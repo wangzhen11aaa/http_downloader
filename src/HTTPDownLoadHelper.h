@@ -4,18 +4,21 @@
 
 #include <curl/curl.h>
 #include <iostream>
+#include <memory>
+#include <mutex>
 
 namespace http_download {
 // 单例模式
 class HTTPDownLoadHelper {
 public:
   static HTTPDownLoadHelper *getInstance() {
-    if (instance_) {
-      return instance_;
-    } else {
-      instance_ = new HTTPDownLoadHelper();
-      return instance_;
+    if (!instance_) {
+      std::lock_guard<std::mutex> lk(mutex_);
+      if (!instance_) {
+        return new HTTPDownLoadHelper();
+      }
     }
+    return instance_;
   }
 
   // 获取
@@ -24,5 +27,6 @@ public:
 
 private:
   static HTTPDownLoadHelper *instance_;
+  static std::mutex mutex_;
 };
 }; // namespace http_download
