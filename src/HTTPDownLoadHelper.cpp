@@ -1,10 +1,11 @@
 #include "HTTPDownLoadHelper.h"
 #include "glog/logging.h"
 
+namespace http_download {
 HTTPDownLoadHelper *HTTPDownLoadHelper::instance_ = nullptr;
 
 void HTTPDownLoadHelper::getHTTPRemoteFileSize(bool &remote_support_range,
-                                               const string &url_str,
+                                               const std::string &url_str,
                                                double &file_size) {
   CURL *curl = curl_easy_init();
   if (curl) {
@@ -12,11 +13,11 @@ void HTTPDownLoadHelper::getHTTPRemoteFileSize(bool &remote_support_range,
     curl_easy_setopt(curl, CURLOPT_URL, url_str.c_str());
     curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    //auto res = curl_easy_perform(curl);
+    // auto res = curl_easy_perform(curl);
 
     int res_code;
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &res_code);
-    DLOG(INFO) << "Response code: " << res_code << endl;
+    DLOG(INFO) << "Response code: " << res_code << std::endl;
     // 获取文件大小
     double cnt;
     curl_easy_getinfo(curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &cnt);
@@ -24,16 +25,17 @@ void HTTPDownLoadHelper::getHTTPRemoteFileSize(bool &remote_support_range,
       DLOG(INFO) << "File size: " << cnt;
       file_size = cnt;
     } else {
-      DLOG(INFO) << "Request failed" << endl;
+      DLOG(INFO) << "Request failed" << std::endl;
       file_size = 0;
     }
 
     curl_easy_setopt(curl, CURLOPT_RANGE, "0-0");
-    //res = curl_easy_perform(curl);
-    // 通过再次访问获得此文件是否支持range.
+    // res = curl_easy_perform(curl);
+    //  通过再次访问获得此文件是否支持range.
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &res_code);
     remote_support_range = res_code == 206 ? true : false;
     curl_easy_cleanup(curl);
     /* Perform the request */
   }
 }
+} // namespace http_download

@@ -4,8 +4,8 @@
 
 #include <curl/curl.h>
 #include <iostream>
-using namespace std;
 
+namespace http_download {
 // 单例模式
 class HTTPDownLoadHelper {
 public:
@@ -19,9 +19,10 @@ public:
   }
 
   // 获取
-  void getHTTPRemoteFileSize(bool &remote_support_range, const string &url_str,
-                             double &file_size);
+  void getHTTPRemoteFileSize(bool &remote_support_range,
+                             const std::string &url_str, double &file_size);
 
 private:
   static HTTPDownLoadHelper *instance_;
 };
+}; // namespace http_download

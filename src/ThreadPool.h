@@ -15,7 +15,6 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
-using namespace std;
 // Wait,Receive and execute task.
 class ThreadPool {
 public:
@@ -26,11 +25,11 @@ public:
   ThreadPool operator=(ThreadPool &&) = delete;
   ThreadPool(int n) : nr_threads(n), stop(false) {
     for (int i = 0; i < nr_threads; i++) {
-      thread worker([this]() {
+      std::thread worker([this]() {
         while (true) {
-          function<void()> task;
+          std::function<void()> task;
           {
-            unique_lock<mutex> lk(mutex_);
+            std::unique_lock<std::mutex> lk(mutex_);
             cv.wait(lk, [this]() { return stop || tasks.size() > 0; });
             if (stop || tasks.empty()) {
               DLOG(INFO) << "Signal stop received\n";
@@ -48,14 +47,15 @@ public:
   }
   // Asychronously execute task.
   template <class Fn, typename... Args>
-  future<invoke_result_t<Fn, Args...>> enqueue(Fn &&f, Args &&...args) {
+  std::future<std::invoke_result_t<Fn, Args...>> enqueue(Fn &&f,
+                                                         Args &&...args) {
     using return_type = std::invoke_result_t<Fn, Args...>;
-    auto task = make_shared<packaged_task<return_type()>>(
-        bind(std::forward<Fn>(f), std::forward<Args>(args)...));
+    auto task = std::make_shared<std::packaged_task<return_type()>>(
+        std::bind(std::forward<Fn>(f), std::forward<Args>(args)...));
     // auto res = std::async(task);
     auto res = task->get_future();
     {
-      lock_guard<std::mutex> lk(mutex_);
+      std::lock_guard<std::mutex> lk(mutex_);
       tasks.push([task]() -> void { (*task)(); });
     }
     cv.notify_one();
@@ -77,9 +77,9 @@ public:
 
 private:
   int nr_threads;
-  mutex mutex_;
-  queue<function<void()>> tasks;
-  vector<thread> workers;
-  condition_variable cv;
+  std::mutex mutex_;
+  std::queue<std::function<void()>> tasks;
+  std::vector<std::thread> workers;
+  std::condition_variable cv;
   bool stop;
 };

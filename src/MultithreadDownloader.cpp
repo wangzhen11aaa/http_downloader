@@ -13,22 +13,22 @@
 #include "MUtil.h"
 #include "Task.h"
 #include "glog/logging.h"
-using namespace std;
 
 // 初始化Context,并调用线程池下载
-void downLoad(shared_ptr<Context> global_context_ptr, vector<string> &url_v,
-              int part_size) {
+void downLoad(std::shared_ptr<Context> global_context_ptr,
+              std::vector<std::string> &url_v, int part_size) {
   for (auto &url : url_v) {
     double fileSize = 0.0;
     bool supportRange = false;
-    auto HTTPDownLoadHelperPtr = HTTPDownLoadHelper::getInstance();
+    auto HTTPDownLoadHelperPtr =
+        http_download::HTTPDownLoadHelper::getInstance();
     HTTPDownLoadHelperPtr->getHTTPRemoteFileSize(supportRange, url, fileSize);
     if (supportRange) {
-      DLOG(INFO) << "Remote HTTP Server support Range" << boolalpha
+      DLOG(INFO) << "Remote HTTP Server support Range" << std::boolalpha
                  << supportRange << endl;
     }
 
-    string file_name;
+    std::string file_name;
     if (MUtil::parseFileName(url, file_name)) {
       if (!MUtil::generateDownloadDir(file_name)) {
         DLOG(INFO) << "Create directory failed" << endl;
@@ -37,30 +37,32 @@ void downLoad(shared_ptr<Context> global_context_ptr, vector<string> &url_v,
     }
 
     global_context_ptr->add_file_size_map(file_name, fileSize);
-    vector<future<double>> vf{};
+    std::vector<std::future<double>> vf{};
     if (!supportRange) {
       // 访问全局变量
       global_context_ptr->add_file_future_map(
           file_name,
-          make_pair(-1, global_context_ptr->getDownloadThreadPool()->enqueue(
-                            &DownLoadTask::execute, url,
-                            MUtil::getFilePath(file_name))));
+          std::make_pair(
+              -1,
+              global_context_ptr->getDownloadThreadPool()->enqueue(
+                  &DownLoadTask::execute, url, MUtil::getFilePath(file_name))));
     } else {
       using ll = long long;
       ll s = 0, z = s + part_size;
 
       int part_num = 0;
       while (s < fileSize) {
-        string rangeStr = MUtil::generateRange(s, min(z, (ll)fileSize));
+        string rangeStr = MUtil::generateRange(s, std::min(z, (ll)fileSize));
         DLOG(INFO) << "rangeStr: " << rangeStr << endl;
 
         //
         global_context_ptr->add_file_future_map(
             file_name,
-            make_pair(part_num,
-                      global_context_ptr->getDownloadThreadPool()->enqueue(
-                          &DownLoadTask::execute_for_part, url,
-                          MUtil::getFilePath(file_name, part_num), rangeStr)));
+            std::make_pair(part_num,
+                           global_context_ptr->getDownloadThreadPool()->enqueue(
+                               &DownLoadTask::execute_for_part, url,
+                               MUtil::getFilePath(file_name, part_num),
+                               rangeStr)));
         global_context_ptr->file_part_range_map_[file_name].push_back(rangeStr);
         global_context_ptr->file_url_map_[file_name] = url;
 
@@ -73,11 +75,12 @@ void downLoad(shared_ptr<Context> global_context_ptr, vector<string> &url_v,
   }
 }
 
-void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
+void waitAndCombine(std::shared_ptr<Context> global_context_ptr,
+                    int part_size) {
   int cnt = 0;
   do {
     for (auto &it : global_context_ptr->get_file_future_map()) {
-      string file_name = it.first;
+      std::string file_name = it.first;
       CombineTask t{};
       if (!global_context_ptr->get_file_parts(file_name)) {
         // 如果当前下载没有part.
@@ -89,7 +92,7 @@ void waitAndCombine(shared_ptr<Context> global_context_ptr, int part_size) {
       DLOG(INFO) << "File size: " << fz << endl;
       auto fv = std::move(it.second);
       // 用户存储没有传输正确的结果.
-      vector<pair<int, future<double>>> nfv{};
+      std::vector<std::pair<int, std::future<double>>> nfv{};
       for (auto &&pair_it_ : fv) {
         int part_index = pair_it_.first;
         int part_num = global_context_ptr->get_file_parts(file_name);
@@ -242,7 +245,7 @@ int main(int argc, char *argv[]) {
   int part_size = 0;
   MUtil::initOps(urls, concurrency, part_size, argc, argv);
   std::shared_ptr<Context> global_context_ptr =
-      make_shared<Context>(concurrency);
+      std::make_shared<Context>(concurrency);
   downLoad(global_context_ptr->getContext(), urls, part_size);
   waitAndCombine(global_context_ptr->getContext(), part_size);
   return 0;

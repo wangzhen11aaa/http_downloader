@@ -1,4 +1,4 @@
-# Install script for directory: /home/wangzhen/program/http_downloader
+# Install script for directory: /home/wangzhen/linux/http_downloader
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/wangzhen/program/http_downloader/lib/cmake_install.cmake")
+  include("/home/wangzhen/linux/http_downloader/lib/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -55,5 +55,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/wangzhen/program/http_downloader/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/wangzhen/linux/http_downloader/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

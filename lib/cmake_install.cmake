@@ -1,4 +1,4 @@
-# Install script for directory: /home/wangzhen/program/http_downloader/lib
+# Install script for directory: /home/wangzhen/linux/http_downloader/lib
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -44,6 +44,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("/home/wangzhen/program/http_downloader/lib/glog/cmake_install.cmake")
+  include("/home/wangzhen/linux/http_downloader/lib/glog/cmake_install.cmake")
 endif()
 
