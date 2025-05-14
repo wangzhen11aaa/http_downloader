@@ -12,6 +12,10 @@
 using namespace std::chrono;
 class Context : public std::enable_shared_from_this<Context> {
 public:
+  Context() = delete;
+  Context(const Context &ct) = delete;
+  Context &operator=(const Context &ct) = delete;
+
   Context(int downloader_cnt) : downloaders_cnt_(downloader_cnt) {
     downloader_threadpool_ptr_ = std::make_shared<ThreadPool>(downloader_cnt);
     combiner_threadpool_ptr_ = std::make_shared<ThreadPool>(1);
@@ -111,9 +115,6 @@ public:
   std::unordered_map<std::string, std::string> file_url_map_{};
 
 private:
-  Context() = default;
-  Context(const Context &) = default;
-  Context &operator=(const Context &) = default;
   int downloaders_cnt_;
   std::vector<std::string> urls_;
 
