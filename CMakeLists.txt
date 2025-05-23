@@ -4,6 +4,11 @@ project(multithreadDownloader VERSION 1.0)
 
 set(PROJECT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
 
+string(COMPARE EQUAL ${CMAKE_BUILD_TYPE} "debug" result TRUE)
+if(result)
+   add_compile_options(-g -O0)
+endif()
+
 message("PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 #include_directories(${PROJECT_SOURCE_DIR})
 
@@ -13,7 +18,7 @@ set(TARGET multithreadDownloader)
 
 add_subdirectory(lib)
 
-set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -Werror -Wunused-variable -Wpedantic -g")
+set(CMAKE_CXX_FLAGS "-std=c++17 -Wall -Wextra -Werror -Wunused-variable -Wpedantic")
 
 add_executable(${TARGET} ${SRC})
 
