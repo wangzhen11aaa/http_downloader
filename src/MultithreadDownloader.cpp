@@ -16,7 +16,7 @@
 
 // 初始化Context,并调用线程池下载
 void downLoad(std::shared_ptr<Context> global_context_ptr,
-              std::vector<std::string> &url_v, int part_size) {
+              const std::vector<std::string> &url_v, int part_size) {
   for (auto &url : url_v) {
     double fileSize = 0.0;
     bool supportRange = false;

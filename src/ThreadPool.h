@@ -30,12 +30,12 @@ public:
   ~ThreadPool();
 
 private:
-  int nr_threads;
+  int nr_threads_;
   std::mutex mutex_;
-  std::queue<std::function<void()>> tasks;
-  std::vector<std::thread> workers;
-  std::condition_variable cv;
-  bool stop;
+  std::queue<std::function<void()>> tasks_;
+  std::vector<std::thread> workers_;
+  std::condition_variable cv_;
+  bool stop_;
 };
 #include "ThreadPool.tpp"
 #endif
